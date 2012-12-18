@@ -5,6 +5,9 @@ CornerCouch - AngularJS module for CouchDB
 
 **Make sure to check the [Wiki](https://github.com/eddelplus/CornerCouch/wiki) on GitHub for more information**
 
+See an example on my [IrisCouch](http://eddelplus.iriscouch.com/gbook1/_design/app/guestbook.html)
+or access the same data cross-site (JSONP) from [my web site](http://www.eddelbuettel.net/html5/guestbook_jsonp.html)
+
 CornerCouch wraps the CouchDB core http APIs for documents, attachments, views, and sessions in three
 JavaScript object classes: CouchServer, CouchDB, and CouchDoc. The 'CornerCouch' module exposes a
 single resource 'cornercouch', which is the factory for CouchServer objects. CouchDoc is an inner
