@@ -352,7 +352,7 @@ factory('cornercouch', ['$http', function($http) {
         var server = this;
         return $http ({
             method:     "GET",
-            url:        this.uri + "/_all_dbs",
+            url:        this.uri + "/_uuids",
             params:     { count: cnt || 1 }
         })
         .success(function(data) {
