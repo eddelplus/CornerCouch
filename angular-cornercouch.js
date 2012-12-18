@@ -148,6 +148,18 @@ factory('cornercouch', ['$http', function($http) {
     
     }
 
+    CouchServer.prototype.getInfo = function () {
+        
+        var db = this;
+        return $http ({
+            method:     "GET",
+            url:        this.uri
+        })
+        .success(function(data) {
+            db.info = data;
+        });
+    }
+    
     CouchDB.prototype.getQueryDoc = function(idx) {
 
         var row = this.rows[idx];
@@ -162,7 +174,7 @@ factory('cornercouch', ['$http', function($http) {
         row.doc = doc;
         return doc;
     }
-
+    
     function executeQuery(db) {
         
        return $http(db.qConfig).success( function (data, dt, hd, config) {
