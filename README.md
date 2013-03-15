@@ -19,3 +19,12 @@ required and not utilized.
 
 CornerCouch has been developed based on Angular.js 1.0.3 and CouchDB 1.2.0.
 The upload of attachments depends on the HTML5 File API and does not support IE9 or older.
+
+Bugs and Fixes
+--------------
+
+###Please report any problems to me via e-mail.
+
+####2013-03-15
+Bug (typo) in CouchDoc.detach(name) fixed, test now included in sample app on IrisCouch.  
+Thanks to Reece Lewellen for finding it and providing the fix.
