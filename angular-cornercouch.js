@@ -108,7 +108,7 @@ factory('cornercouch', ['$http', function($http) {
             
             return $http({
                 method:     "DELETE",
-                url:        encodeUri(dbUri, doc,_id, name),
+                url:        encodeUri(dbUri, doc._id, name),
                 params:     { rev: doc._rev }
             })
             .success(function () {
