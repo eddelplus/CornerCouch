@@ -28,3 +28,13 @@ Bugs and Fixes
 ####2013-03-15
 Bug (typo) in CouchDoc.detach(name) fixed, test now included in sample app on IrisCouch.  
 Thanks to Reece Lewellen for finding it and providing the fix.
+
+####2013-03-24
+Several small fixes identified by the expanded sample application
+* CouchServer.getUUIDs()
+* CouchServer.getInfo()
+* CouchDB.getInfo()
+* CouchServer.getUserDB()
+* CouchServer.getUserDoc()
+* CouchServer.logout sets userDoc = { }
+* CouchServer.login sets userCtx.name (fix for CouchDB glitch)
