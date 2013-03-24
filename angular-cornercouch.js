@@ -1,4 +1,4 @@
-// Copyright: 2012, Jochen Eddelbüttel
+// Copyright: 2013, Jochen Eddelbüttel
 // MIT License applies
 //
 angular.module('CornerCouch', ['ng']).
@@ -134,6 +134,18 @@ factory('cornercouch', ['$http', function($http) {
         this.nextRow = null;
     }
 
+    CouchDB.prototype.getInfo = function () {
+        
+        var db = this;
+        return $http ({
+            method:     "GET",
+            url:        this.uri + "/"
+        })
+        .success(function(data) {
+            db.info = data;
+        });
+    };
+    
     CouchDB.prototype.newDoc = function(initData) {
 
         return new this.docClass(initData);
@@ -148,18 +160,6 @@ factory('cornercouch', ['$http', function($http) {
     
     };
 
-    CouchServer.prototype.getInfo = function () {
-        
-        var db = this;
-        return $http ({
-            method:     "GET",
-            url:        this.uri
-        })
-        .success(function(data) {
-            db.info = data;
-        });
-    };
-    
     CouchDB.prototype.getQueryDoc = function(idx) {
 
         var row = this.rows[idx];
@@ -277,18 +277,29 @@ factory('cornercouch', ['$http', function($http) {
     };
     
     CouchServer.prototype.getUserDB = function() {
-        if (!this.userDB)
-            this.userDB = this.getDB("_users");
-        return userDB;
+        if (!this.userDB) this.userDB = this.getDB("_users");
+        return this.userDB;
     };
     
     CouchServer.prototype.getUserDoc = function () {
         var db = this.getUserDB();
-        if (this.userCtx.user)
-            this.userDoc = db.getDoc("org.couchdb.user:" + this.userCtx.user);
+        if (this.userCtx.name)
+            this.userDoc = db.getDoc("org.couchdb.user:" + this.userCtx.name);
         else
             this.userDoc = db.newDoc();
         return this.userDoc;
+    };
+    
+    CouchServer.prototype.getInfo = function () {
+        
+        var server = this;
+        return $http ({
+            method:     "GET",
+            url:        this.uri + "/"
+        })
+        .success(function(data) {
+            server.info = data;
+        });
     };
     
     CouchServer.prototype.getDatabases = function () {
@@ -333,6 +344,7 @@ factory('cornercouch', ['$http', function($http) {
             "&password=" + encodeURIComponent(pwd);
         
         var server = this;
+        var userName = usr;
         return $http({
             method:     "POST",
             url:        this.uri + "/_session",
@@ -344,8 +356,8 @@ factory('cornercouch', ['$http', function($http) {
             delete data["ok"];
             server.userCtx = data;
             // name is null in POST response for admins as of Version 1.2.1
-            // GET _session works fine
-            if (!data.name) server.session();
+            // This patches over the problem
+            server.userCtx.name = userName;
         });
 
     };
@@ -359,15 +371,16 @@ factory('cornercouch', ['$http', function($http) {
         })
         .success(function() {
             server.userCtx = { name: null, roles: [] };
+            server.userDoc = { };
         });
     };
     
-    CouchServer.prototype.getUUIDs = function (cnt) {
+    CouchServer.prototype.getUUIDs = function(cnt) {
         
         var server = this;
         return $http ({
             method:     "GET",
-            url:        this.uri + "/_all_dbs",
+            url:        this.uri + "/_uuids",
             params:     { count: cnt || 1 }
         })
         .success(function(data) {
