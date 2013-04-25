@@ -22,7 +22,7 @@ factory('cornercouch', ['$http', function($http) {
         var uri = base;
         if (part1) uri = uri + "/" + encodeURIComponent(part1);
         if (part2) uri = uri + "/" + encodeURIComponent(part2);
-        return uri;
+        return uri.replace('%2F', '/');
     }
 
     // Database-level constructor
