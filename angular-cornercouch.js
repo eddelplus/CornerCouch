@@ -227,6 +227,16 @@ factory('cornercouch', ['$http', function($http) {
         );
     };
 
+    CouchDB.prototype.list = function(design, list, view, qparams)
+    {
+        return this.queryView(
+            "/_design/" + encodeURIComponent(design) +
+            "/_list/" + encodeURIComponent(list) +
+            "/" + encodeURIComponent(view),
+            qparams
+        );
+    };
+
     CouchDB.prototype.queryAll = function(qparams)
     {
         return this.queryView("/_all_docs", qparams);
