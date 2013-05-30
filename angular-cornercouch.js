@@ -324,7 +324,7 @@ factory('cornercouch', ['$http', function($http) {
         });
     };
     
-    CouchDB.prototype.createDB = function(dbName) {
+    CouchServer.prototype.createDB = function(dbName) {
         var server = this;
         return $http ({
             method:     "PUT",
