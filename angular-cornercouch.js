@@ -179,6 +179,12 @@ factory('cornercouch', ['$http', function($http) {
         
        return $http(db.qConfig).success( function (data, dt, hd, config) {
 
+            // wrap include_docs into CouchDoc documents aha 2013-05-30
+            if (config.params && config.params.include_docs) {
+              for (var i=0; i < data.rows.length; i++) {
+                data.rows[i].doc = db.newDoc(data.rows[i].doc);
+              }
+            }
             // Pop extra row for pagination
             if (config.params && config.params.limit) {
                 if (data.rows.length == config.params.limit) {
