@@ -1,0 +1,11 @@
+{
+  "name": "CornerCouch",
+  "version": "0.0.0",
+  "main": "angular-cornercouch.js",
+  "ignore": [
+    "bower_components"
+  ],
+  "dependencies": {
+    "angular": "~1.0.3"
+  }
+}
