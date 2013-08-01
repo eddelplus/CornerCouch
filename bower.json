@@ -6,6 +6,6 @@
     "bower_components"
   ],
   "dependencies": {
-    "angular": "1.0.3"
+    "angular": "~1.0.3"
   }
 }
