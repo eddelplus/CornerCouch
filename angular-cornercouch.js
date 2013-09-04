@@ -42,6 +42,7 @@ factory('cornercouch', ['$http', function($http) {
             
             var config = {
                 method: getMethod,
+                withCredentials: true,
                 url:    encodeUri(dbUri, id || this._id)
             };
             if (docParams) config.params = docParams;
@@ -59,11 +60,13 @@ factory('cornercouch', ['$http', function($http) {
             if (this._id)
                 config = { 
                     method: "PUT" ,
+                    withCredentials: true,
                     url:    encodeUri(dbUri, this._id)
                 };
             else
                 config = {
                     method: "POST",
+                    withCredentials: true,
                     url:    dbUri 
                 };
             
@@ -79,6 +82,7 @@ factory('cornercouch', ['$http', function($http) {
 
             return $http({
                 method: "DELETE",
+                withCredentials: true,
                 url:    encodeUri(dbUri, this._id),
                 params: { rev: this._rev }
             });
@@ -91,6 +95,7 @@ factory('cornercouch', ['$http', function($http) {
             
             return $http({
                 method:     "PUT",
+                withCredentials: true,
                 url:        encodeUri(dbUri, doc._id, name || file.name),
                 params:     { rev: doc._rev },
                 headers:    { "Content-Type": file.type },
@@ -108,6 +113,7 @@ factory('cornercouch', ['$http', function($http) {
             
             return $http({
                 method:     "DELETE",
+                withCredentials: true,
                 url:        encodeUri(dbUri, doc._id, name),
                 params:     { rev: doc._rev }
             })
@@ -139,6 +145,7 @@ factory('cornercouch', ['$http', function($http) {
         var db = this;
         return $http ({
             method:     "GET",
+            withCredentials: true,
             url:        this.uri + "/"
         })
         .success(function(data) {
@@ -197,6 +204,7 @@ factory('cornercouch', ['$http', function($http) {
     {
         var config = {
             method: this.method,
+            withCredentials: true,
             url:    this.uri + viewURL
         };
 
@@ -305,6 +313,7 @@ factory('cornercouch', ['$http', function($http) {
         var server = this;
         return $http ({
             method:     "GET",
+            withCredentials: true,
             url:        this.uri + "/"
         })
         .success(function(data) {
@@ -317,6 +326,7 @@ factory('cornercouch', ['$http', function($http) {
         var server = this;
         return $http ({
             method:     "GET",
+            withCredentials: true,
             url:        this.uri + "/_all_dbs"
         })
         .success(function(data) {
@@ -328,6 +338,7 @@ factory('cornercouch', ['$http', function($http) {
         var server = this;
         return $http ({
             method:     "PUT",
+            withCredentials: true,
             url:        encodeUri(server.uri, dbName)
         })
         .success(function () {
@@ -340,6 +351,7 @@ factory('cornercouch', ['$http', function($http) {
         var server = this;
         return $http ({
             method:     "GET",
+            withCredentials: true,
             url:        this.uri + "/_session"
         })
         .success(function(data) {
@@ -357,6 +369,7 @@ factory('cornercouch', ['$http', function($http) {
         var userName = usr;
         return $http({
             method:     "POST",
+            withCredentials: true,
             url:        this.uri + "/_session",
             headers:    { "Content-Type": 
                           "application/x-www-form-urlencoded" },
@@ -377,6 +390,7 @@ factory('cornercouch', ['$http', function($http) {
         var server = this;
         return $http ({
             method:     "DELETE",
+            withCredentials: true,
             url:        this.uri + "/_session"
         })
         .success(function() {
@@ -390,6 +404,7 @@ factory('cornercouch', ['$http', function($http) {
         var server = this;
         return $http ({
             method:     "GET",
+            withCredentials: true,
             url:        this.uri + "/_uuids",
             params:     { count: cnt || 1 }
         })
