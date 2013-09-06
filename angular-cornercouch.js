@@ -275,11 +275,16 @@ factory('cornercouch', ['$http', function($http) {
         if (url) {
             this.uri = url;
             this.method = getMethod || "JSONP";
+            if (this.method !== "JSONP") {
+                // Remote server with potential CORS support
+                // Enable globally via $http defaults
+                $http.defaults.withCredentials = true;
+            }
         }
         else {
             this.uri = "";
             this.method = "GET";
-        }         
+        }
     }
 
     CouchServer.prototype.getDB = function(dbName) {
