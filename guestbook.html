@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html ng-app="CouchApp">
+<head>
+  <title>CornerCouch guestbook sample</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 10px">
+<div class="container" ng-controller="ctrlGBook1">
+    <h2>AngularJS/CouchDB + CornerCouch Guestbook</h2>
+    <h4>Login form (try testuser/secret and get lots of information)</h4>
+    <form class='form-inline' name='loginForm' ng-submit="submitLogin()">
+        Name <input type='text' name='user' ng-model='loginUser' required>&nbsp;
+        Password <input type='password' name='pass' ng-model='loginPass' required>&nbsp;
+        <button class='btn' type="submit">Login</button>&nbsp;
+    </form>
+    <div class="alert alert-info" ng-show='showInfo'>
+        <button class='btn' ng-click='server.logout()'>Logout</button>
+        <br><br>
+        <pre>server.userCtx = {{ server.userCtx | json }}</pre>
+        <pre>server.info = {{ server.info | json }}</pre>
+        <pre>server.databases = {{ server.databases | json }}</pre>
+        <pre>server.uuids = {{ server.uuids | json }}</pre>
+        <pre>server.userDoc = {{ server.userDoc | json }}</pre>
+        <pre>gbookdb.info = {{ gbookdb.info | json }}</pre>
+    </div>
+    <small>
+        Visit the <a href="https://github.com/eddelplus/cornercouch" target="_blank">GitHub</a> project
+        and and my <a href="http://eddelbuettel.net/html5" target="_blank">Homepage</a>
+    </small>
+    <h3>Guest book entries <small>(click for detail)</small></h3>
+    <table class="table table-striped">
+        <thead>
+        <tr><th>UTC</th><th>Subject</th><th>By</th></tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in gbookdb.rows" ng-click="rowClick($index)">
+            <td class="span2">{{ row.key }}</td>
+            <td class="span6">{{ row.doc.subject }}</td>
+            <td class="span2">{{ row.doc.alias }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <ul class="pager">
+    <li><a ng-class="{muted: gbookdb.queryActive}" ng-click="prevClick()" ng-show="gbookdb.prevRows.length">Newer</a></li>
+    <li><a ng-class="{muted: gbookdb.queryActive}"  ng-click="nextClick()" ng-show="gbookdb.nextRow">Older</a></li>
+    <li><a ng-class="{muted: gbookdb.queryActive}"  ng-click="moreClick()" ng-show="gbookdb.nextRow">More...</a></li>
+    </ul>
+    <div class="alert alert-info" ng-show="detail._id">
+        <div class="navbar" ng-show="detail._attachments">
+        <div class="navbar-inner">
+            <a class="brand">Attachments:</a>
+            <ul class="nav" ng-repeat="(name,info) in detail._attachments">
+                <li class="divider-vertical"></li>
+                <li><a href="{{ detail.attachUri(name) }}" target="_blank">{{ name }}</a></li>
+                <li><i class="icon-remove" ng-click="detachClick(name)"></i></li>
+            </ul>
+        </div></div>
+        <div class="btn btn-primary span2" style="float: right" ng-click="removeClick()">Remove</div>
+        <h4>{{detail.alias}} wrote at {{detail.utc}} UTC</h4>
+        <p>_id = "{{detail._id}}", _rev ="{{detail._rev}}"</p>
+        <form name="formDetail">
+        <div class="btn btn-primary span2" style="float: right" ng-click="updateClick()" ng-show="formDetail.$dirty">Update</div>
+        <input name="subject" type="text" class="span9" ng-model="detail.subject" required>
+        <textarea name="body" rows="5" class="span9" ng-model="detail.body"></textarea>
+        <input type="file" id="upload" class="span9">
+        <div class="btn btn-primary span2" style="float: right" ng-click="attachClick()" ng-hide="formDetail.$dirty">Attach</div>
+        </form>
+    </div>
+    <div class="alert alert-error" ng-show="errordata">{{ errordata | json }}</div>
+    <form name="formNewEntry" class="offset1 span9" ng-submit="submitEntry()">
+    <fieldset>
+        <legend>New guestbook entry</legend>
+        <label>An alias of your own choice (required)</label>
+        <input type="text" class="span4" ng-model="newentry.alias" required>
+        <label>Your mail address (not shown, but available via FireBug)</label>
+        <input type="email" class="span4" ng-model="newentry.email">
+        <label>Your subject line (required)</label>
+        <input type="text" class="span9" ng-model="newentry.subject" required>
+        <label>Your message</label>
+        <textarea rows="5" class="span9" ng-model="newentry.body"></textarea>
+    </fieldset>
+    <label>Submit your entry here</label>
+    <button class="submit" ng-disabled="formNewEntry.$invalid">Submit</button>
+    </form>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+<script src="angular-cornercouch.js"></script>
+<script>
+angular.module('CouchApp', ['CornerCouch']);
+
+function ctrlGBook1($scope, $filter, cornercouch) {
+    
+    $scope.server = cornercouch();
+    $scope.server.session();
+    $scope.gbookdb = $scope.server.getDB('gbook1');
+    $scope.newentry = $scope.gbookdb.newDoc();
+    $scope.gbookdb.query("app", "utc_only", { include_docs: true, descending: true, limit: 8 });
+    
+    $scope.submitLogin = function() {
+        $scope.server.login($scope.loginUser, $scope.loginPass)
+            .success( function() {
+                $scope.loginPass = $scope.loginUser = '';
+                $scope.showInfo = true;
+                $scope.server.getInfo();
+                $scope.server.getDatabases();
+                $scope.server.getUUIDs(3);
+                $scope.server.getUserDoc();
+                $scope.gbookdb.getInfo();
+            });
+    };
+    
+    function setError(data, status) {
+        $scope.errordata = { "status": status, "data": data };
+    }
+
+    $scope.rowClick = function(idx) {
+        $scope.detail = $scope.gbookdb.getQueryDoc(idx);
+        $scope.formDetail.$setPristine();
+    };
+    
+    $scope.nextClick = function() { $scope.gbookdb.queryNext(); delete $scope.detail; };
+    $scope.prevClick = function() { $scope.gbookdb.queryPrev(); delete $scope.detail; };
+    $scope.moreClick = function() { $scope.gbookdb.queryMore(); };
+    
+    $scope.removeClick = function() {
+        $scope.detail.remove()
+            .success(function() {
+                delete $scope.detail;
+                $scope.gbookdb.queryRefresh();
+            });
+    };
+
+    $scope.updateClick = function() {
+        $scope.detail.save()
+            .error(setError)
+            .success( function () {
+                $scope.formDetail.$setPristine();
+            });
+    };
+    
+    $scope.attachClick = function() {
+
+        var fileInput = document.getElementById("upload");
+        if (fileInput.files.length === 0) return;
+        
+        $scope.detail.attach(fileInput.files[0])
+            .error(setError)
+            .success( function () {
+                fileInput.value = "";
+            });
+    };
+
+    $scope.detachClick = function(name) {
+            $scope.detail.detach(name);
+    };
+
+    $scope.submitEntry = function() {
+        
+        var now = new Date(); 
+        var now = new Date(now.getUTCFullYear(), now.getUTCMonth()  , now.getUTCDate(),
+                           now.getUTCHours()   , now.getUTCMinutes(), now.getUTCSeconds());
+
+        $scope.newentry.utc = $filter('date')(now, 'yyyy-MM-dd HH:mm:ss');
+        
+        $scope.newentry.save().success( function() {
+            delete $scope.errordata;
+            $scope.detail = $scope.newentry;
+            $scope.newentry = $scope.gbookdb.newDoc();
+            $scope.gbookdb.query("app", "utc_only", { include_docs: true, descending: true, limit: 8 });
+        });
+    };
+}
+</script>
+</body>
+</html>

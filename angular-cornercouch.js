@@ -132,6 +132,7 @@ factory('cornercouch', ['$http', function($http) {
         this.rows = [];
         this.prevRows = [];
         this.nextRow = null;
+        this.queryActive = false;
     }
 
     CouchDB.prototype.getInfo = function () {
@@ -177,20 +178,29 @@ factory('cornercouch', ['$http', function($http) {
 
     function executeQuery(db) {
         
+       db.queryActive = true;
+       
        return $http(db.qConfig).success( function (data, dt, hd, config) {
 
             // Pop extra row for pagination
             if (config.params && config.params.limit) {
-                if (data.rows.length == config.params.limit) {
+                if (data.rows.length === config.params.limit) {
                     db.nextRow = data.rows.pop();
                 }
                 else {
                     db.nextRow = null;
                 }
             }
-            db.rows = data.rows;
+            if (config.append) {
+                for (var i in data.rows) db.rows.push(data.rows[i]);
+                delete db.qConfig.append;
+            }
+            else {
+                db.rows = data.rows;
+            }
+            db.queryActive = false;
 
-       });
+       }).error( function() { db.queryActive = false; });
     }
 
     CouchDB.prototype.queryView = function(viewURL, qparams)
@@ -250,7 +260,7 @@ factory('cornercouch', ['$http', function($http) {
     CouchDB.prototype.queryNext = function()
     {
         var row = this.nextRow;
-        if (row) {
+        if (row && !this.queryActive) {
             this.prevRows.push(this.rows[0]);
             this.qConfig.params.startkey = ng.toJson(row.key);
             if (row.id && row.id !== row.key)
@@ -260,9 +270,22 @@ factory('cornercouch', ['$http', function($http) {
         else return null;
     };
 
+    CouchDB.prototype.queryMore = function()
+    {
+        var row = this.nextRow;
+        if (row && !this.queryActive) {
+            this.qConfig.params.startkey = ng.toJson(row.key);
+            if (row.id && row.id !== row.key)
+                this.qConfig.params.startkey_docid = row.id;
+            this.qConfig.append = true;
+            return executeQuery(this);
+        }
+        else return null;
+    };
+
     CouchDB.prototype.queryPrev = function() {
         var row = this.prevRows.pop();
-        if (row) {
+        if (row && !this.queryActive) {
             this.qConfig.params.startkey = ng.toJson(row.key);
             if (row.id && row.id !== row.key)
                 this.qConfig.params.startkey_docid = row.id;
