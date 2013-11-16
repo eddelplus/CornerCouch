@@ -3,7 +3,7 @@
 <head>
   <title>CornerCouch guestbook sample</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+  <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
 </head>
 <body style="padding-top: 10px">
 <div class="container" ng-controller="ctrlGBook1">
@@ -91,7 +91,7 @@ angular.module('CouchApp', ['CornerCouch']);
 
 function ctrlGBook1($scope, $filter, cornercouch) {
     
-    $scope.server = cornercouch();
+    $scope.server = cornercouch("https://eddelplus.iriscouch.com", "GET");
     $scope.server.session();
     $scope.gbookdb = $scope.server.getDB('gbook1');
     $scope.newentry = $scope.gbookdb.newDoc();
