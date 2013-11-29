@@ -85,10 +85,16 @@ factory('cornercouch', ['$http', function($http) {
         };
 
         // Requires File-API 'file', sorry IE9
-        CouchDoc.prototype.attach = function(file, name) {
-
+        CouchDoc.prototype.attach = function(file, name, successCallback) {
             var doc = this;
-            
+
+            if(!successCallback) {
+                successCallback = function() {
+                    // Reload document for local consistency.
+                    doc.load();
+                };
+            }
+
             return $http({
                 method:     "PUT",
                 url:        encodeUri(dbUri, doc._id, name || file.name),
@@ -96,10 +102,31 @@ factory('cornercouch', ['$http', function($http) {
                 headers:    { "Content-Type": file.type },
                 data:       file
             })
-            .success(function () {
-                // Reload document for local consistency
-                doc.load();
-            });
+            .success(successCallback);
+        };
+
+        CouchDoc.prototype.attachMulti = function(files, names) {
+            var doc = this;
+
+            // File lists off of upload DOM elements are iterable but not
+            // actually Javascript arrays.
+            if(files.shift === undefined) {
+                var tmp = [];
+                for(var i = 0; i < files.length; i++) {
+                    tmp.push(files[i]);
+                }
+                files = tmp;
+            }
+
+            if(files.length) {
+                var file = files.shift();
+                var name = (names && names.length) ? names.shift() : null;
+                this.attach(file, name, function() {
+                    doc.load().success(function() {
+                        doc.attachMulti(files, names);
+                    });
+                });
+            }
         };
         
         CouchDoc.prototype.detach = function(name) {
