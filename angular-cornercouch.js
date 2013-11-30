@@ -85,20 +85,21 @@ factory('cornercouch', ['$http', function($http) {
         };
 
         // Requires File-API 'file', sorry IE9
-        CouchDoc.prototype.attach = function(file, name) {
+        CouchDoc.prototype.attach = function(file, nameOrCallback) {
 
+			var isF = ng.isFunction(nameOrCallback);            
             var doc = this;
-            
+			
             return $http({
                 method:     "PUT",
-                url:        encodeUri(dbUri, doc._id, name || file.name),
+                url:        encodeUri(dbUri, doc._id, !isF && nameOrCallback || file.name),
                 params:     { rev: doc._rev },
                 headers:    { "Content-Type": file.type },
                 data:       file
             })
             .success(function () {
                 // Reload document for local consistency
-                doc.load();
+                doc.load().success(isF ? nameOrCallback : ng.noop);
             });
         };
         

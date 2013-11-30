@@ -63,7 +63,7 @@
         <div class="btn btn-primary span2" style="float: right" ng-click="updateClick()" ng-show="formDetail.$dirty">Update</div>
         <input name="subject" type="text" class="span9" ng-model="detail.subject" required>
         <textarea name="body" rows="5" class="span9" ng-model="detail.body"></textarea>
-        <input type="file" id="upload" class="span9">
+        <input type="file" id="upload" class="span9" multiple>
         <div class="btn btn-primary span2" style="float: right" ng-click="attachClick()" ng-hide="formDetail.$dirty">Attach</div>
         </form>
     </div>
@@ -84,7 +84,7 @@
     <button class="submit" ng-disabled="formNewEntry.$invalid">Submit</button>
     </form>
 </div>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
 <script src="angular-cornercouch.js"></script>
 <script>
 angular.module('CouchApp', ['CornerCouch']);
@@ -140,15 +140,18 @@ function ctrlGBook1($scope, $filter, cornercouch) {
     };
     
     $scope.attachClick = function() {
-
+	
         var fileInput = document.getElementById("upload");
-        if (fileInput.files.length === 0) return;
-        
-        $scope.detail.attach(fileInput.files[0])
-            .error(setError)
-            .success( function () {
-                fileInput.value = "";
-            });
+		var idx = 0;
+		
+		function callback() {
+			if (idx < fileInput.files.length)
+				$scope.detail.attach(fileInput.files[idx++], callback).error(setError);
+			else
+				fileInput.value = "";
+		};
+
+		callback();
     };
 
     $scope.detachClick = function(name) {
