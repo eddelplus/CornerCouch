@@ -85,24 +85,34 @@ factory('cornercouch', ['$http', function($http) {
         };
 
         // Requires File-API 'file', sorry IE9
-        CouchDoc.prototype.attach = function(file, nameOrCallback) {
+        CouchDoc.prototype.attach = function(file, name, reloadCB) {
 
-            var isF = ng.isFunction(nameOrCallback);            
             var doc = this;
+            if (ng.isFunction(name)) { reloadCB = name; name = null; }
 
             return $http({
                 method:     "PUT",
-                url:        encodeUri(dbUri, doc._id, !isF && nameOrCallback || file.name),
+                url:        encodeUri(dbUri, doc._id, name || file.name),
                 params:     { rev: doc._rev },
                 headers:    { "Content-Type": file.type },
                 data:       file
             })
             .success(function () {
                 // Reload document for local consistency
-                doc.load().success(isF ? nameOrCallback : ng.noop);
+                doc.load().success(reloadCB || ng.noop);
             });
         };
-        
+
+        CouchDoc.prototype.attachMulti = function(files, successCB) {
+            var doc = this;
+            var idx = 0;
+            function loopCB() {
+                if (idx < files.length)
+                    doc.attach(files[idx], ++idx < files.length ? loopCB : successCB);
+            };
+            loopCB();
+        }
+
         CouchDoc.prototype.detach = function(name) {
 
             var doc = this;
