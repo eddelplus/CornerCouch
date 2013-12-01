@@ -87,9 +87,9 @@ factory('cornercouch', ['$http', function($http) {
         // Requires File-API 'file', sorry IE9
         CouchDoc.prototype.attach = function(file, nameOrCallback) {
 
-			var isF = ng.isFunction(nameOrCallback);            
+            var isF = ng.isFunction(nameOrCallback);            
             var doc = this;
-			
+
             return $http({
                 method:     "PUT",
                 url:        encodeUri(dbUri, doc._id, !isF && nameOrCallback || file.name),

@@ -140,18 +140,17 @@ function ctrlGBook1($scope, $filter, cornercouch) {
     };
     
     $scope.attachClick = function() {
-	
-        var fileInput = document.getElementById("upload");
-		var idx = 0;
-		
-		function callback() {
-			if (idx < fileInput.files.length)
-				$scope.detail.attach(fileInput.files[idx++], callback).error(setError);
-			else
-				fileInput.value = "";
-		};
 
-		callback();
+        var fileInput = document.getElementById("upload");
+        var idx = 0;
+
+        function callback() {
+            if (idx < fileInput.files.length)
+                $scope.detail.attach(fileInput.files[idx++], callback).error(setError);
+            else
+                fileInput.value = "";
+        };
+        callback();
     };
 
     $scope.detachClick = function(name) {
