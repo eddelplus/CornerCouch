@@ -207,7 +207,10 @@ factory('cornercouch', ['$http', function($http) {
                 delete db.qConfig.append;
             }
             else {
-                db.rows = data.rows;
+                if(data.rows === undefined)
+                    db.data = data
+                else
+                    db.rows = data.rows;
             }
             db.queryActive = false;
 
