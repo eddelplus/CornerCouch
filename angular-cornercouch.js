@@ -335,7 +335,7 @@ factory('cornercouch', ['$http', function($http) {
     
     CouchServer.prototype.getUserDoc = function () {
         var db = this.getUserDB();
-        if (this.userCtx.name)
+        if (this.userCtx && this.userCtx.name)
             this.userDoc = db.getDoc("org.couchdb.user:" + this.userCtx.name);
         else
             this.userDoc = db.newDoc();
