@@ -225,7 +225,7 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
             // Raise limit by 1 for pagination
             if (qparams.limit) qparams.limit++;
             // Convert key parameters to JSON
-            for (p in qparams) switch (p) {
+            for (var p in qparams) switch (p) {
                 case "key":
                 case "keys":
                 case "startkey":
