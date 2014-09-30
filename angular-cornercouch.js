@@ -2,7 +2,7 @@
 // MIT License applies
 //
 angular.module('CornerCouch', ['ng']).
-factory('cornercouch', ['$http', function($http) {
+factory('cornercouch', ['$http', function($http) { 'use strict';
 
     // Shorthand angular
     var ng = angular;
