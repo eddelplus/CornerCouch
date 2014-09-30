@@ -2,7 +2,7 @@
 // MIT License applies
 //
 angular.module('CornerCouch', ['ng']).
-factory('cornercouch', ['$http', function($http) {
+factory('cornercouch', ['$http', function($http) { 'use strict';
 
     // Shorthand angular
     var ng = angular;
@@ -225,7 +225,7 @@ factory('cornercouch', ['$http', function($http) {
             // Raise limit by 1 for pagination
             if (qparams.limit) qparams.limit++;
             // Convert key parameters to JSON
-            for (p in qparams) switch (p) {
+            for (var p in qparams) switch (p) {
                 case "key":
                 case "keys":
                 case "startkey":
