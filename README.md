@@ -23,14 +23,14 @@ The upload of attachments depends on the HTML5 File API and does not support IE9
 Bugs and Fixes
 --------------
 
-###Please report any problems to me via e-mail or as a GitHub issue
+### Please report any problems to me via e-mail or as a GitHub issue
 
-####2013-11-16
+#### 2013-11-16
 * Included the guestbook.html sample here on GitHub
 * Upgraded to Angular.js 1.2.1
 * Implemented CouchDB.queryMore() and CouchDB.queryActive
 
-####2013-03-24
+#### 2013-03-24
 Several small fixes identified by the expanded sample application
 * CouchServer.getUUIDs()
 * CouchServer.getInfo()
@@ -40,7 +40,7 @@ Several small fixes identified by the expanded sample application
 * CouchServer.logout sets userDoc = { }
 * CouchServer.login sets userCtx.name (fix for CouchDB glitch)
 
-####2013-03-15
+#### 2013-03-15
 Bug (typo) in CouchDoc.detach(name) fixed, test now included in sample app on IrisCouch.  
 Thanks to Reece Lewellen for finding it and providing the fix.
 
