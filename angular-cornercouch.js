@@ -6,18 +6,28 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
 
     // Shorthand angular
     var ng = angular;
-    
+
     function extendJSONP(config) {
-        
+
         if (config.method === "JSONP")
             if (config.params)
                 config.params.callback = "JSON_CALLBACK";
             else
                 config.params = { callback: "JSON_CALLBACK" };
-            
+
         return config;
     }
-    
+
+    function constructQuery(params) {
+       var bits = [];
+       for (var p in params) {
+         if (params.hasOwnProperty(p)) {
+            bits.push(encodeURIComponent(p) + "=" + encodeURIComponent(params[p]));
+         }
+       }
+       return bits.join('&');
+    }
+
     function encodeUri(base, part1, part2) {
         var uri = base;
         if (part1) uri = uri + "/" + encodeURIComponent(part1);
@@ -25,10 +35,11 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
         return uri.replace('%2F', '/');
     }
 
+
     // Database-level constructor
     // Database name is required parameter
     function CouchDB(dbName, serverUri, getMethod) {
-        
+
         // CouchDoc accesses the DB level via this variable in the closure
         var dbUri = encodeUri(serverUri, dbName);
 
@@ -39,13 +50,13 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
         }
 
         CouchDoc.prototype.load = function(id, docParams) {
-            
+
             var config = {
                 method: getMethod,
                 url:    encodeUri(dbUri, id || this._id)
             };
             if (docParams) config.params = docParams;
-            
+
             var doc = this;
 
             return $http(extendJSONP(config)).success( function (data) {
@@ -57,16 +68,16 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
 
             var config;
             if (this._id)
-                config = { 
+                config = {
                     method: "PUT" ,
                     url:    encodeUri(dbUri, this._id)
                 };
             else
                 config = {
                     method: "POST",
-                    url:    dbUri 
+                    url:    dbUri
                 };
-            
+
             var doc = config.data = this;
 
             return $http(config).success( function (data) {
@@ -116,7 +127,7 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
         CouchDoc.prototype.detach = function(name) {
 
             var doc = this;
-            
+
             return $http({
                 method:     "DELETE",
                 url:        encodeUri(dbUri, doc._id, name),
@@ -147,7 +158,7 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
     }
 
     CouchDB.prototype.getInfo = function () {
-        
+
         var db = this;
         return $http ({
             method:     "GET",
@@ -157,7 +168,40 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
             db.info = data;
         });
     };
-    
+
+    CouchDB.prototype.changeSource = function(params) {
+
+       if(!params)
+       {
+          params = {};
+       }
+
+       // Can't think of any reason why you would want to do anything
+       // else
+       params.feed = 'eventsource';
+
+       if (!params.since) {
+          params.since = 'now';
+       }
+
+       var changes_uri = this.uri + '/_changes?' + constructQuery(params);
+
+       var source;
+
+       if (typeof(EventSource) ) {
+          source = new EventSource(changes_uri);
+          source.onmessage = function(m) {
+            console.log("EventSource message " + ng.toJson(m));
+            if(typeof(params.cb) === 'function')
+              params.cb(m);
+          };
+       }
+       else {
+          alert("No EventSource");
+       }
+       return source;
+    };
+
     CouchDB.prototype.newDoc = function(initData) {
 
         return new this.docClass(initData);
@@ -169,17 +213,17 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
         var doc = new this.docClass();
         doc.load(id);
         return doc;
-    
+
     };
 
     CouchDB.prototype.getQueryDoc = function(idx) {
 
         var row = this.rows[idx];
-        
+
         if (!row.doc) return this.getDoc(row.id);
-        
+
         var doc = row.doc;
-        
+
         if (doc instanceof this.docClass) return doc;
 
         doc = this.newDoc(doc);
@@ -188,9 +232,9 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
     };
 
     function executeQuery(db) {
-        
+
        db.queryActive = true;
-       
+
        return $http(db.qConfig).success( function (data, dt, hd, config) {
 
             // Pop extra row for pagination
@@ -304,7 +348,7 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
         }
         else return null;
     };
-    
+
     function CouchServer(url, getMethod) {
         if (url) {
             this.uri = url;
@@ -324,12 +368,12 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
     CouchServer.prototype.getDB = function(dbName) {
         return new CouchDB(dbName, this.uri, this.method);
     };
-    
+
     CouchServer.prototype.getUserDB = function() {
         if (!this.userDB) this.userDB = this.getDB("_users");
         return this.userDB;
     };
-    
+
     CouchServer.prototype.getUserDoc = function () {
         var db = this.getUserDB();
         if (this.userCtx.name)
@@ -338,9 +382,9 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
             this.userDoc = db.newDoc();
         return this.userDoc;
     };
-    
+
     CouchServer.prototype.getInfo = function () {
-        
+
         var server = this;
         return $http ({
             method:     "GET",
@@ -350,9 +394,9 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
             server.info = data;
         });
     };
-    
+
     CouchServer.prototype.getDatabases = function () {
-        
+
         var server = this;
         return $http ({
             method:     "GET",
@@ -362,7 +406,7 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
             server.databases = data;
         });
     };
-    
+
     CouchServer.prototype.createDB = function(dbName) {
         var server = this;
         return $http ({
@@ -375,7 +419,7 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
     };
 
     CouchServer.prototype.session = function() {
-        
+
         var server = this;
         return $http ({
             method:     "GET",
@@ -387,17 +431,17 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
     };
 
     CouchServer.prototype.login = function(usr, pwd) {
-        
+
         var body =
-            "name="      + encodeURIComponent(usr) + 
+            "name="      + encodeURIComponent(usr) +
             "&password=" + encodeURIComponent(pwd);
-        
+
         var server = this;
         var userName = usr;
         return $http({
             method:     "POST",
             url:        this.uri + "/_session",
-            headers:    { "Content-Type": 
+            headers:    { "Content-Type":
                           "application/x-www-form-urlencoded" },
             data:       body.replace(/%20/g, "+")
         })
@@ -412,7 +456,7 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
     };
 
     CouchServer.prototype.logout = function() {
-        
+
         var server = this;
         return $http ({
             method:     "DELETE",
@@ -423,9 +467,9 @@ factory('cornercouch', ['$http', function($http) { 'use strict';
             server.userDoc = { };
         });
     };
-    
+
     CouchServer.prototype.getUUIDs = function(cnt) {
-        
+
         var server = this;
         return $http ({
             method:     "GET",
